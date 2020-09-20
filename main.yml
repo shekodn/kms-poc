@@ -1,0 +1,168 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Resources:
+  theKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Enabled: true
+      EnableKeyRotation: false
+      KeyPolicy:
+        Version: '2012-10-17'
+        Id: !Sub '${AWS::StackName}-Key'
+        Statement:
+        - Sid: Enable IAM User Permissions
+          Effect: Allow
+          Principal:
+            AWS:
+              Fn::Join:
+              - ''
+              - - 'arn:aws:iam::'
+                - Ref: AWS::AccountId
+                - :root
+          Action: kms:*
+          Resource: '*'
+      PendingWindowInDays: 7
+      KeyUsage: ENCRYPT_DECRYPT
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+
+  theAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub 'alias/${AWS::StackName}'
+      TargetKeyId: !Ref theKey
+    
+  ServiceUser:
+    Type: AWS::IAM::User
+    Properties: 
+      Policies: 
+        - PolicyName: !Sub '${AWS::StackName}-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:DescribeKey
+                  - kms:Encrypt
+                  - kms:Decrypt
+                Resource:
+                  - arn:aws:kms:*    
+      Tags: 
+        - Key: Name
+          Value: !Ref AWS::StackName
+      UserName: !Sub '${AWS::StackName}-service-user'
+  
+  ServiceUserAccessKey:
+      Type: AWS::IAM::AccessKey
+      Properties: 
+        UserName: !Ref ServiceUser
+
+  iCanEncryptStuffGroup:
+    Type: AWS::IAM::Group
+    Properties: 
+      GroupName: !Sub '${AWS::StackName}-iCanEncryptStuffGroup'
+      Policies: 
+        - PolicyName: !Sub '${AWS::StackName}-iCanEncryptStuffPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:Encrypt
+                Resource:
+                  - arn:aws:kms:*    
+  EncryptorUser:
+    Type: AWS::IAM::User
+    Properties: 
+      UserName: !Sub '${AWS::StackName}-encryptor-user'
+      Groups: 
+        - !Ref iCanEncryptStuffGroup
+      Tags: 
+        - Key: Name
+          Value: !Ref AWS::StackName
+
+  EncryptorUserAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties: 
+      UserName: !Ref EncryptorUser
+  
+  iCanDecryptStuffGroup:
+    Type: AWS::IAM::Group
+    Properties: 
+      GroupName: !Sub '${AWS::StackName}-iCanDecryptStuffGroup'
+      Policies: 
+        - PolicyName: !Sub '${AWS::StackName}-iCanDecryptStuffPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                Resource:
+                  - arn:aws:kms:*    
+  DecryptorUser:
+    Type: AWS::IAM::User
+    Properties: 
+      UserName: !Sub '${AWS::StackName}-decryptor-user'
+      Groups: 
+        - !Ref iCanDecryptStuffGroup
+      Tags: 
+        - Key: Name
+          Value: !Ref AWS::StackName
+
+
+  DecryptorUserAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties: 
+      UserName: !Ref DecryptorUser
+
+        
+Outputs:
+  ServiceUserAccessKey:
+    Description: 'ServiceUser AccessKeyId'
+    Value: !Ref ServiceUserAccessKey
+    Export:
+      Name: ServiceUserAccessKey
+
+  ServiceUserSecretAccessKey:
+    Description: 'ServiceUser SecretAccessKey'
+    Value: !GetAtt ServiceUserAccessKey.SecretAccessKey
+    Export:
+      Name: ServiceUserSecretAccessKey
+
+  DecryptorUserAccessKey:
+    Description: 'DecryptorUser AccessKeyId'
+    Value: !Ref DecryptorUserAccessKey
+    Export:
+      Name: DecryptorUserAccessKey
+
+  DecryptorUserSecretAccessKey:
+    Description: 'DecryptorUser SecretAccessKey'
+    Value: !GetAtt DecryptorUserAccessKey.SecretAccessKey
+    Export:
+      Name: DecryptorUserSecretAccessKey
+
+  EncryptorUserAccessKey:
+    Description: 'EncryptorUser AccessKeyId'
+    Value: !Ref EncryptorUserAccessKey
+    Export:
+      Name: EncryptorUserAccessKey
+
+  EncryptorUserSecretAccessKey:
+    Description: 'EncryptorUser SecretAccessKey'
+    Value: !GetAtt EncryptorUserAccessKey.SecretAccessKey
+    Export:
+      Name: EncryptorUserSecretAccessKey
+  
+  theKey:
+    Description: 'theKey key ID'
+    Value: !Ref theKey
+    Export:
+      Name: theKeyId
+  
+  theKeyAlias:
+    Description: 'theAlias Alias'
+    Value: !Ref theAlias
+    Export:
+      Name: theKeyAlias
