@@ -1,0 +1,30 @@
+@startuml
+
+    actor client
+    entity encryptor
+    entity decryptor
+    entity KMS
+    
+    client -> encryptor
+    encryptor -> client : fake login promt
+    client -> encryptor : username("bob")
+    encryptor -> client : Plaintext to encrypt promt
+    client -> encryptor : Plaintext
+    
+    encryptor -> KMS : (Plaintext, EncryptionContext(user_id(bob)), theKeyAlias)) 
+    KMS -> encryptor : CiphertextBlob
+    encryptor -> client : base64(CiphertextBlob)
+    
+    ... Some delay ...
+
+    client -> decryptor
+    decryptor -> client : fake login promt
+    client -> decryptor : username("bob")
+    decryptor -> client : base64(CiphertextBlob) to decrypt promt
+    client -> decryptor : base64(CiphertextBlob)
+    
+    decryptor -> KMS : (CiphertextBlob, EncryptionContext(user_id(bob)), theKeyAlias)) 
+    KMS -> decryptor : plaintext_bytes
+    decryptor -> client : plaintext
+
+@enduml
