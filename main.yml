@@ -32,31 +32,6 @@ Resources:
     Properties:
       AliasName: !Sub 'alias/${AWS::StackName}'
       TargetKeyId: !Ref theKey
-    
-  ServiceUser:
-    Type: AWS::IAM::User
-    Properties: 
-      Policies: 
-        - PolicyName: !Sub '${AWS::StackName}-policy'
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - kms:DescribeKey
-                  - kms:Encrypt
-                  - kms:Decrypt
-                Resource:
-                  - arn:aws:kms:*    
-      Tags: 
-        - Key: Name
-          Value: !Ref AWS::StackName
-      UserName: !Sub '${AWS::StackName}-service-user'
-  
-  ServiceUserAccessKey:
-      Type: AWS::IAM::AccessKey
-      Properties: 
-        UserName: !Ref ServiceUser
 
   iCanEncryptStuffGroup:
     Type: AWS::IAM::Group
@@ -119,29 +94,18 @@ Resources:
 
         
 Outputs:
-  ServiceUserAccessKey:
-    Description: 'ServiceUser AccessKeyId'
-    Value: !Ref ServiceUserAccessKey
-    Export:
-      Name: ServiceUserAccessKey
 
-  ServiceUserSecretAccessKey:
-    Description: 'ServiceUser SecretAccessKey'
-    Value: !GetAtt ServiceUserAccessKey.SecretAccessKey
+  theKey:
+    Description: 'theKey key ID'
+    Value: !Ref theKey
     Export:
-      Name: ServiceUserSecretAccessKey
-
-  DecryptorUserAccessKey:
-    Description: 'DecryptorUser AccessKeyId'
-    Value: !Ref DecryptorUserAccessKey
+      Name: theKeyId
+  
+  theKeyAlias:
+    Description: 'theAlias Alias'
+    Value: !Ref theAlias
     Export:
-      Name: DecryptorUserAccessKey
-
-  DecryptorUserSecretAccessKey:
-    Description: 'DecryptorUser SecretAccessKey'
-    Value: !GetAtt DecryptorUserAccessKey.SecretAccessKey
-    Export:
-      Name: DecryptorUserSecretAccessKey
+      Name: theKeyAlias
 
   EncryptorUserAccessKey:
     Description: 'EncryptorUser AccessKeyId'
@@ -154,15 +118,15 @@ Outputs:
     Value: !GetAtt EncryptorUserAccessKey.SecretAccessKey
     Export:
       Name: EncryptorUserSecretAccessKey
-  
-  theKey:
-    Description: 'theKey key ID'
-    Value: !Ref theKey
+
+  DecryptorUserAccessKey:
+    Description: 'DecryptorUser AccessKeyId'
+    Value: !Ref DecryptorUserAccessKey
     Export:
-      Name: theKeyId
-  
-  theKeyAlias:
-    Description: 'theAlias Alias'
-    Value: !Ref theAlias
+      Name: DecryptorUserAccessKey
+
+  DecryptorUserSecretAccessKey:
+    Description: 'DecryptorUser SecretAccessKey'
+    Value: !GetAtt DecryptorUserAccessKey.SecretAccessKey
     Export:
-      Name: theKeyAlias
+      Name: DecryptorUserSecretAccessKey
