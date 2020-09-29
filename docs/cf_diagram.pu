@@ -1,0 +1,18 @@
+@startuml
+cloud AWS {
+  node kms {
+     file theKey
+  }
+}
+
+frame iCanEncryptStuffGroup {
+  file encryptor
+}
+
+frame iCanDecryptStuffGroup {
+  file decryptor
+}
+
+iCanEncryptStuffGroup <-> theKey : "Encrypt Policy"
+iCanDecryptStuffGroup <-> theKey : "Decrypt Policy"
+@enduml
