@@ -45,6 +45,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - kms:Encrypt
+                  - kms:GenerateDataKey              
                 Resource:
                   - arn:aws:kms:*    
   EncryptorUser:
